@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  role      String   // OWNER, CASHIER, HELPER
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  auditLogs AuditLog[]
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  barcode     String      @unique
+  category    String
+  priceBuy    Float
+  priceSell   Float
+  gstRate     Float       @default(0) // Current Tax Rate
+  stock       Int         @default(0)
+  image       String?     // Path to uploaded product photo
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orderItems  OrderItem[]
+  stockLogs   StockLog[]
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  totalAmount Float
+  paymentMode String      // CASH, UPI, CARD, MIXED
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  customerId     String?
+  customer       Customer?   @relation(fields: [customerId], references: [id])
+  discountAmount     Float       @default(0) // Track how much money was saved
+  discountPercentage Float       @default(0) // Track literal percentage applied
+  items              OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float   // Sell Price at time of order
+  buyPrice  Float   @default(0) // Buy Price at time of order (for profit calc)
+  gstRate   Float   @default(0) // Tax Rate at time of order (for tax calc)
+}
+
+model StockLog {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  change    Int      // Positive for add, Negative for sale/remove
+  reason    String   // "SALE", "RESTOCK", "CORRECTION", "INITIAL"
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // "LOGIN", "CREATE_ORDER", "UPDATE_PRODUCT", "DELETE_PRODUCT"
+  details   String?  // JSON string or description
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  key       String   @id // e.g., "SHOP_NAME", "UPI_ID", "SHOP_MOBILE", "GST_NUMBER", "AUTO_PRINT"
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  phone       String   @unique
+  name        String?
+  visitCount  Int      @default(0)
+  totalSpent  Float    @default(0)
+  lastVisit   DateTime
+  allowOffers Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  orders      Order[]
+}
+
+model Offer {
+  id                 String   @id @default(uuid())
+  title              String
+  code               String   @unique @default(uuid())
+  message            String
+  discountPercentage Float    @default(0)
+  validTill          DateTime
+  isActive           Boolean  @default(false)
+  createdAt          DateTime @default(now())
+}

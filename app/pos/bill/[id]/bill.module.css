@@ -1,0 +1,165 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    background: #f3f4f6;
+    min-height: 100vh;
+}
+
+.bill {
+    width: 300px;
+    /* Standard 80mm thermal width */
+    background: white;
+    padding: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: #000;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.header h2 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.header p {
+    margin: 2px 0;
+    font-size: 12px;
+}
+
+.meta {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.meta p {
+    margin: 2px 0;
+}
+
+.divider {
+    border: none;
+    border-top: 1px dashed black;
+    margin: 8px 0;
+}
+
+.dividerLight {
+    border: none;
+    border-top: 1px dotted #888;
+    margin: 4px 0;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+}
+
+.table th {
+    text-align: left;
+    border-bottom: 1px dashed black;
+    padding-bottom: 4px;
+    font-weight: bold;
+}
+
+.table td {
+    padding: 4px 0;
+    vertical-align: top;
+}
+
+.summaryBox {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+}
+
+.grandTotalRow {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 16px;
+    margin-top: 4px;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* UI Action Buttons (Hidden when printing physically) */
+.actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+}
+
+.backBtn,
+.printBtn,
+.waBtn {
+    padding: 10px 16px;
+    background: #4b5563;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.printBtn {
+    background: #111827;
+}
+
+.waBtn {
+    background: #16a34a;
+}
+
+.waBtn:hover {
+    background: #15803d;
+}
+
+.backBtn:hover {
+    background: #374151;
+}
+
+@media print {
+    .container {
+        background: white;
+        padding: 0;
+        margin: 0;
+        align-items: flex-start;
+    }
+
+    .bill {
+        box-shadow: none;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .actions {
+        display: none;
+    }
+
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+}

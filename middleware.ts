@@ -12,8 +12,15 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    if (session && isLoginPage) {
-        return NextResponse.redirect(new URL('/pos', request.url))
+    if (session) {
+        if (isLoginPage) {
+            return NextResponse.redirect(new URL('/pos', request.url))
+        }
+
+        const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
+        if (isDashboard && session.user.role !== 'OWNER') {
+            return NextResponse.redirect(new URL('/pos', request.url))
+        }
     }
 
     return NextResponse.next()

@@ -151,6 +151,33 @@ export default function SettingsClient({ initialSettings }: { initialSettings: S
 
                 <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '1rem 0' }} />
 
+                {/* Data Backup & Restore */}
+                <div>
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#374151', marginBottom: '1rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.5rem' }}>Data Backup & Restore</h2>
+                    <p style={{ fontSize: '0.9rem', color: '#4b5563', marginBottom: '1rem' }}>
+                        PostgreSQL databases cannot be downloaded directly like SQLite. Use the button below to download a full JSON backup of all Orders, Customers, and Products.
+                        <strong>We recommend downloading a backup every week.</strong>
+                    </p>
+                    <a
+                        href="/api/backup"
+                        download
+                        style={{
+                            display: 'inline-block',
+                            padding: '10px 16px',
+                            backgroundColor: '#10b981',
+                            color: 'white',
+                            textDecoration: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 600,
+                            fontSize: '0.95rem'
+                        }}
+                    >
+                        Export Full Database Backup (JSON)
+                    </a>
+                </div>
+
+                <hr style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '1rem 0' }} />
+
                 <button
                     type="submit"
                     disabled={isSaving}
@@ -165,8 +192,8 @@ export default function SettingsClient({ initialSettings }: { initialSettings: S
                     {isSaving ? 'Saving...' : 'Save Settings'}
                 </button>
 
-            </form>
-        </div>
+            </form >
+        </div >
     )
 }
 

@@ -5,7 +5,7 @@ import { getSession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { getSettings } from '@/app/actions/settings'
 
-export async function createOrder(cart: any[], paymentMode: string, clientTotalAmount: number, customerId?: string | null, discountAmount: number = 0, discountPercentage: number = 0) {
+export async function createOrder(cart: any[], paymentMode: string, clientTotalAmount: number, customerId?: string | null, promoCode?: string | null) {
     console.log('[createOrder] Starting...')
     console.log('[createOrder] Cart Size:', cart.length)
     console.log('[createOrder] Payment:', paymentMode, 'Total:', clientTotalAmount)
@@ -80,18 +80,37 @@ export async function createOrder(cart: any[], paymentMode: string, clientTotalA
                 })
             }
 
-            // Apply the discount to the server calculated total
-            serverTotal = serverTotal - discountAmount
+            // 2.5 Server-side discount calculation
+            const settings = await getSettings()
+            let finalDiscountAmount = 0;
+            let finalDiscountPercentage = 0;
 
-            // Optional: Validate total (Allow 1.0 epsilon for floating point)
+            if (promoCode) {
+                const offer = await tx.offer.findUnique({
+                    where: { code: promoCode.toUpperCase() }
+                });
+                if (offer && offer.isActive && new Date(offer.validTill) > new Date()) {
+                    finalDiscountPercentage = offer.discountPercentage;
+                    finalDiscountAmount = Number(((serverTotal * finalDiscountPercentage) / 100).toFixed(2));
+                }
+            } else if (settings.AUTO_DISCOUNT_ENABLED === 'true') {
+                const threshold = parseFloat(settings.AUTO_DISCOUNT_THRESHOLD || '5000');
+                if (serverTotal >= threshold) {
+                    finalDiscountPercentage = parseFloat(settings.AUTO_DISCOUNT_PERCENTAGE || '2');
+                    finalDiscountAmount = Number(((serverTotal * finalDiscountPercentage) / 100).toFixed(2));
+                }
+            }
+
+            // Apply the discount to the server calculated total
+            serverTotal = Number((serverTotal - finalDiscountAmount).toFixed(2));
+
+            // Strict Validation vs Client
+            // Allow 1.0 epsilon for floating point issues only. If more, strict reject!
             if (Math.abs(serverTotal - clientTotalAmount) > 1.0) {
-                // We could throw error, or just use serverTotal. 
-                // For safety/strictness, let's use serverTotal.
-                // console.warn('Client total mismatch', clientTotalAmount, serverTotal)
+                throw new Error(`Price mismatch. Client reported: ${clientTotalAmount}, Server calculated: ${serverTotal}`);
             }
 
             // 3. Simple Order ID Generation
-            const settings = await getSettings()
             const resetDaily = settings.RESET_ORDER_DAILY === 'true'
 
             let nextIdStr = "1"
@@ -131,8 +150,8 @@ export async function createOrder(cart: any[], paymentMode: string, clientTotalA
                     totalAmount: serverTotal, // Trust Server
                     paymentMode,
                     userId: session.user.id,
-                    discountAmount,
-                    discountPercentage,
+                    discountAmount: finalDiscountAmount,
+                    discountPercentage: finalDiscountPercentage,
                     ...(customerId ? { customerId } : {}),
                     items: {
                         create: orderItemsData

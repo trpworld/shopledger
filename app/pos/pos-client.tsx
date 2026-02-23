@@ -255,7 +255,7 @@ export default function POSClient({ initialProducts, userRole, shopSettings }: {
         setIsCheckingOut(true)
         setShowUPIModal(false)
         try {
-            const res = await createOrder(cart, paymentMethod, grandTotal, activeCustomer?.id || null, discountAmount, discountPct)
+            const res = await createOrder(cart, paymentMethod, grandTotal, activeCustomer?.id || null, appliedPromo?.code || null)
             if (res?.error) {
                 alert(res.error)
             } else if (res?.success && res.orderId) {

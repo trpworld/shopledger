@@ -3,85 +3,86 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   name      String
-  role      String   // OWNER, CASHIER, HELPER
+  role      String
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   auditLogs AuditLog[]
+  orders    Order[]
 }
 
 model Product {
-  id          String      @id @default(uuid())
-  name        String
-  barcode     String      @unique
-  category    String
-  priceBuy    Float
-  priceSell   Float
-  gstRate     Float       @default(0) // Current Tax Rate
-  stock       Int         @default(0)
-  image       String?     // Path to uploaded product photo
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
-  stockLogs   StockLog[]
+  id         String      @id @default(uuid())
+  name       String
+  barcode    String      @unique
+  category   String
+  priceBuy   Float
+  priceSell  Float
+  gstRate    Float       @default(0)
+  stock      Int         @default(0)
+  image      String?
+  isActive   Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  orderItems OrderItem[]
+  stockLogs  StockLog[]
 }
 
 model Order {
-  id          String      @id @default(uuid())
-  totalAmount Float
-  paymentMode String      // CASH, UPI, CARD, MIXED
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  userId      String
-  user        User        @relation(fields: [userId], references: [id])
-  customerId     String?
-  customer       Customer?   @relation(fields: [customerId], references: [id])
-  discountAmount     Float       @default(0) // Track how much money was saved
-  discountPercentage Float       @default(0) // Track literal percentage applied
+  id                 String      @id @default(uuid())
+  totalAmount        Float
+  paymentMode        String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  userId             String
+  customerId         String?
+  discountAmount     Float       @default(0)
+  discountPercentage Float       @default(0)
+  customer           Customer?   @relation(fields: [customerId], references: [id])
+  user               User        @relation(fields: [userId], references: [id])
   items              OrderItem[]
 }
 
 model OrderItem {
   id        String  @id @default(uuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id])
   productId String
-  product   Product @relation(fields: [productId], references: [id])
   quantity  Int
-  price     Float   // Sell Price at time of order
-  buyPrice  Float   @default(0) // Buy Price at time of order (for profit calc)
-  gstRate   Float   @default(0) // Tax Rate at time of order (for tax calc)
+  price     Float
+  buyPrice  Float   @default(0)
+  gstRate   Float   @default(0)
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }
 
 model StockLog {
   id        String   @id @default(uuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  change    Int      // Positive for add, Negative for sale/remove
-  reason    String   // "SALE", "RESTOCK", "CORRECTION", "INITIAL"
+  change    Int
+  reason    String
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
 }
 
 model AuditLog {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  action    String   // "LOGIN", "CREATE_ORDER", "UPDATE_PRODUCT", "DELETE_PRODUCT"
-  details   String?  // JSON string or description
+  action    String
+  details   String?
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Setting {
-  key       String   @id // e.g., "SHOP_NAME", "UPI_ID", "SHOP_MOBILE", "GST_NUMBER", "AUTO_PRINT"
+  key       String   @id
   value     String
   updatedAt DateTime @updatedAt
 }

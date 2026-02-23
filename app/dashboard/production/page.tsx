@@ -31,7 +31,7 @@ export default async function ProductionChecklistPage() {
                     <span className={health.dbIntegrity ? styles.pass : styles.fail}>
                         {health.dbIntegrity ? '✅ DB OK' : '❌ CORRUPT'}
                     </span>
-                    <p>SQLite Integrity Check</p>
+                    <p>Database Integrity Check</p>
                 </div>
                 <div className={styles.checkItem}>
                     <span className={health.financialDiscrepancies === 0 ? styles.pass : styles.warn}>

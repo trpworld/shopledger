@@ -15,8 +15,8 @@ export default async function DashboardLayout({
         redirect('/login')
     }
 
-    // Cashiers cannot access the dashboard
-    if (session.user.role === 'CASHIER') {
+    // Only owners can access the dashboard
+    if (session.user.role !== 'OWNER') {
         redirect('/pos')
     }
 

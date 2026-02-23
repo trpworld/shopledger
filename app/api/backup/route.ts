@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
-import fs from 'fs'
-import path from 'path'
+import { db } from '@/lib/db'
 
 export async function GET() {
     const session = await getSession()
@@ -9,18 +8,28 @@ export async function GET() {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const dbPath = path.join(process.cwd(), 'prisma', 'dev.db')
+    try {
+        const [orders, customers, products] = await Promise.all([
+            db.order.findMany({ include: { items: true } }),
+            db.customer.findMany(),
+            db.product.findMany()
+        ])
 
-    if (!fs.existsSync(dbPath)) {
-        return NextResponse.json({ error: 'Database file not found' }, { status: 404 })
+        const backupData = {
+            timestamp: new Date().toISOString(),
+            data: { orders, customers, products }
+        }
+
+        const jsonString = JSON.stringify(backupData, null, 2)
+        const fileBuffer = Buffer.from(jsonString, 'utf-8')
+
+        return new NextResponse(fileBuffer, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Disposition': `attachment; filename="shopledger-backup-${new Date().toISOString().split('T')[0]}.json"`,
+            },
+        })
+    } catch (e: any) {
+        return NextResponse.json({ error: 'Failed to generate backup: ' + e.message }, { status: 500 })
     }
-
-    const fileBuffer = fs.readFileSync(dbPath)
-
-    return new NextResponse(fileBuffer, {
-        headers: {
-            'Content-Type': 'application/x-sqlite3',
-            'Content-Disposition': `attachment; filename="backup-${new Date().toISOString().split('T')[0]}.db"`,
-        },
-    })
 }

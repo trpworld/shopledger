@@ -2,7 +2,11 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-const key = new TextEncoder().encode(process.env.JWT_SECRET || 'secretKey')
+const secretRaw = process.env.JWT_SECRET || 'secretKey_dev_only_do_not_use_in_prod'
+if (process.env.NODE_ENV === 'production' && secretRaw.length < 32) {
+    throw new Error('JWT_SECRET must be at least 32 characters for HS256 security in production.')
+}
+const key = new TextEncoder().encode(secretRaw)
 
 export async function encrypt(payload: any) {
     return await new SignJWT(payload)

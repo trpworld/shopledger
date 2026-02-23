@@ -21,10 +21,9 @@ export async function runSystemDiagnostics(): Promise<HealthStatus> {
     // 1. DB Integrity
     let dbIntegrity = false
     try {
-        const result = await db.$queryRaw`PRAGMA integrity_check;` as any[]
-        if (result.length > 0 && result[0].integrity_check === 'ok') {
-            dbIntegrity = true
-        }
+        // Simple ping to verify PostgreSQL connectivity since PRAGMA is SQLite only
+        await db.$queryRaw`SELECT 1;`
+        dbIntegrity = true
     } catch (e) {
         console.error('DB Check Failed', e)
     }

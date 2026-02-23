@@ -35,8 +35,8 @@ export async function loginAction(formData: FormData) {
         // Determine the correct redirect route
         if (user.role === 'OWNER') {
             redirectPath = '/dashboard'
-        } else if (user.role === 'HELPER') {
-            redirectPath = '/dashboard' // we configured layout to bounce them to /products which is fine
+        } else if (user.role === 'HELPER' || user.role === 'CASHIER') {
+            redirectPath = '/pos'
         }
 
     } catch (err: any) {

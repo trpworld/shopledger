@@ -1,4 +1,4 @@
-import { validatePromoCode } from './app/actions/offer-admin.ts'
+import { validatePromoCode } from './app/actions/offer-admin'
 
 async function main() {
     try {

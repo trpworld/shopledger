@@ -5,9 +5,9 @@ async function main() {
   const customer = await prisma.customer.upsert({
     where: { phone: '8927202527' },
     update: {},
-    create: { phone: '8927202527', name: 'Test User' }
+    create: { phone: '8927202527', name: 'Test User', lastVisit: new Date() }
   })
-  
+
   const product = await prisma.product.findFirst()
 
   const order = await prisma.order.create({
@@ -20,9 +20,7 @@ async function main() {
           productId: product?.id || 'dummy',
           quantity: 1,
           price: 100,
-          costPrice: 50,
-          gstRate: 0,
-          margin: 50
+          gstRate: 0
         }
       }
     }
